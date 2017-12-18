@@ -2,36 +2,30 @@
 
 import os
 import sys
-import random
+import time
 import pygame
-from numpy import clip
-
-default_sprite = pygame.Surface((0,0))
+os.chdir(os.path.dirname(__file__)) # I really shouldn't need this line, but eh, atom.
+import sprites
 
 def main():
     """Main entrypoint into the program
     Starts by setting up the environment, then kicks it down a hill"""
-    os.chdir(os.path.dirname(__file__)) # I really shouldn't need this line, but eh, atom.
     pygame.init()
     size = width, height = 320, 240
-    default_sprite = pygame.image.load('al.png')
     speed, black, screen = [2, 2], [0, 0, 0], pygame.display.set_mode(size)
-    dude = pygame.image.load('100.png')
-    dure = dude.get_rect()
+    the = MyDude()
+    
 
     while True: #Terrible idea, or Best Idea?
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 sys.exit()
-        dure = dure.move(speed)
-        if dure.left < 0 or dure.right > width:
-            speed[0] *= -1
-        if dure.top < 0 or dure.bottom > height:
-            speed[1] *= -1
 
         black = [clip(_ + (random.random()*2 - 1), 0, 255) for _ in black]
         screen.fill(black)
-        screen.blit(dude, dure)
+
+        the.step()
+        the.draw(screen)
         pygame.display.flip()
 
 class Thing:
@@ -53,7 +47,10 @@ class Thing:
 class MyDude(Thing):
     """It is Wednesday."""
     def __init__(self):
+        super().__init__(self)
         self.speed = 2
+        self.sprite = sprites.dude
+        self.bbox = sprites.dure
 
     def step(self, delta: float):
         """Do part of a thing
@@ -61,7 +58,10 @@ class MyDude(Thing):
         keys = pygame.key.get_pressed() # Take a snapshot of the keyboard
         if keys[pygame.K_LEFT]:
             self.position[0] -= delta * self.speed
+        if keys[pygame.K_RIGHT]:
+            self.position[0] += delta * self.speed
 
+        dure.x,dure.y = self.position
 
 if __name__ == '__main__':
     main()
