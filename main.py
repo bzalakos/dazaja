@@ -11,29 +11,31 @@ def main():
     """Main entrypoint into the program
     Starts by setting up the environment, then kicks it down a hill"""
     pygame.init()
-    size = width, height = 320, 240
-    speed, black, screen = [2, 2], [0, 0, 0], pygame.display.set_mode(size)
-    the = MyDude()
-    
+    size = 320, 240
+    screen = pygame.display.set_mode(size)
+    the = MyDude(160, 120)
+    blocks = [Square(0,240), Square(64, 240), Square(128, 240)]
+    sigma = time.time()
 
     while True: #Terrible idea, or Best Idea?
-        for e in pygame.event.get():
-            if e.type == pygame.QUIT:
+        for eve in pygame.event.get():
+            if eve.type == pygame.QUIT:
                 sys.exit()
+        sig = time.time()
+        screen.fill((0, 0, 0))
 
-        black = [clip(_ + (random.random()*2 - 1), 0, 255) for _ in black]
-        screen.fill(black)
-
-        the.step()
+        the.step(sig - sigma)
         the.draw(screen)
+        for block in blocks: block.draw(screen)
         pygame.display.flip()
+        sigma = sig
 
 class Thing:
     """Object Entity Actor, whatever, it's a thing, it might do stuff"""
-    def __init__(self):
-        self.position = [0,0]
-        self.speed = 0
-        self.sprite = default_sprite
+    def __init__(self, x: int = 0, y: int = 0):
+        self.position = [x, y]
+        self.velocity = [0, 0]
+        self.sprite = sprites.default_sprite
         self.bbox = self.sprite.get_rect()  # #rekt
 
     def step(self, delta):
@@ -46,11 +48,11 @@ class Thing:
 
 class MyDude(Thing):
     """It is Wednesday."""
-    def __init__(self):
-        super().__init__(self)
-        self.speed = 2
+    def __init__(self, *args):
+        super().__init__(args)
+        self.speed = 64
         self.sprite = sprites.dude
-        self.bbox = sprites.dure
+        self.bbox = sprites.dudeb
 
     def step(self, delta: float):
         """Do part of a thing
@@ -61,7 +63,14 @@ class MyDude(Thing):
         if keys[pygame.K_RIGHT]:
             self.position[0] += delta * self.speed
 
-        dure.x,dure.y = self.position
+        self.bbox.x, self.bbox.y = self.position
+
+class Square(Thing):
+    """Solid Object, one would presume"""
+    def __init__(self, *args):
+        super().__init__(args)
+        self.sprite = sprites.square
+        self.bbox = sprites.squareb
 
 if __name__ == '__main__':
     main()

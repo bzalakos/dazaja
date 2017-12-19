@@ -3,5 +3,7 @@ import pygame
 
 # Not bothered by invalid constant names, don't much care for ALL CAPS. pylint: disable=C0103
 default_sprite = pygame.image.load('al.png')
+square = pygame.image.load('square.png')
+squareb = square.get_rect()
 dude = pygame.image.load('100.png')
-dure = dude.get_rect()
+dudeb = dude.get_rect()
