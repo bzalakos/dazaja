@@ -13,8 +13,8 @@ def main():
     pygame.init()
     size = 320, 240
     screen = pygame.display.set_mode(size)
-    the = MyDude(160, 120)
-    blocks = [Square(0,240), Square(64, 240), Square(128, 240)]
+    the = MyDude(80, 120)
+    blocks = [Square(0, 220), Square(160, 120), Square(64, 220)]
     sigma = time.time()
 
     while True: #Terrible idea, or Best Idea?
@@ -24,7 +24,7 @@ def main():
         sig = time.time()
         screen.fill((0, 0, 0))
 
-        the.step(sig - sigma)
+        the.step(sig - sigma, [b.bbox for b in blocks])
         the.draw(screen)
         for block in blocks: block.draw(screen)
         pygame.display.flip()
@@ -32,11 +32,12 @@ def main():
 
 class Thing:
     """Object Entity Actor, whatever, it's a thing, it might do stuff"""
-    def __init__(self, x: int = 0, y: int = 0):
+    def __init__(self, x: int = 0, y: int = 0, sprite=sprites.default_sprite):
         self.position = [x, y]
         self.velocity = [0, 0]
-        self.sprite = sprites.default_sprite
+        self.sprite = sprite
         self.bbox = self.sprite.get_rect()  # #rekt
+        self.bbox.x, self.bbox.y = self.position
 
     def step(self, delta):
         """Do a little bit of thing, delta is time since last step"""
@@ -48,29 +49,41 @@ class Thing:
 
 class MyDude(Thing):
     """It is Wednesday."""
-    def __init__(self, *args):
-        super().__init__(args)
-        self.speed = 64
-        self.sprite = sprites.dude
-        self.bbox = sprites.dudeb
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, sprite=sprites.dude, **kwargs)
+        self.speed = 128
 
-    def step(self, delta: float):
+    def step(self, delta: float, blocks: list):
         """Do part of a thing
         Keep track of how long it's been since the last part, so you know how much of it to do"""
         keys = pygame.key.get_pressed() # Take a snapshot of the keyboard
+        desp = delta * self.speed
+
+        dote = self.bbox.move((0, 1)).collidelistall(blocks)
+        if dote:
+            self.position[1] = min([blocks[d].top for d in dote]) - self.bbox.h
+        else:
+            self.position[1] += desp
+
         if keys[pygame.K_LEFT]:
-            self.position[0] -= delta * self.speed
+            lete = self.bbox.move((-1, 0)).collidelistall(blocks)
+            if lete:
+                self.position[0] = max([blocks[l].right for l in lete])
+            else:
+                self.position[0] -= desp
         if keys[pygame.K_RIGHT]:
-            self.position[0] += delta * self.speed
+            rite = self.bbox.move((1, 0)).collidelistall(blocks)
+            if rite:
+                self.position[0] = min([blocks[r].left for r in rite]) - self.bbox.w
+            else:
+                self.position[0] += desp
 
         self.bbox.x, self.bbox.y = self.position
 
 class Square(Thing):
     """Solid Object, one would presume"""
-    def __init__(self, *args):
-        super().__init__(args)
-        self.sprite = sprites.square
-        self.bbox = sprites.squareb
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, sprite=sprites.square, **kwargs)
 
 if __name__ == '__main__':
     main()
