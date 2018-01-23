@@ -33,11 +33,10 @@ def main():
 class Thing:
     """Object Entity Actor, whatever, it's a thing, it might do stuff"""
     def __init__(self, x: int = 0, y: int = 0, sprite=sprites.default_sprite):
-        self.position = [x, y]
         self.velocity = [0, 0]
         self.sprite = sprite
         self.bbox = self.sprite.get_rect()  # #rekt
-        self.bbox.x, self.bbox.y = self.position
+        self.bbox.x, self.bbox.y = x, y
 
     def step(self, delta):
         """Do a little bit of thing, delta is time since last step"""
@@ -52,6 +51,9 @@ class MyDude(Thing):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, sprite=sprites.dude, **kwargs)
         self.speed = 128
+        self.jhei = 128
+        self.inje = False
+        self.jbegin = self.bbox.y
 
     def step(self, delta: float, blocks: list):
         """Do part of a thing
@@ -61,24 +63,46 @@ class MyDude(Thing):
 
         dote = self.bbox.move((0, 1)).collidelistall(blocks)
         if dote:
-            self.position[1] = min([blocks[d].top for d in dote]) - self.bbox.h
+            self.bbox.y = min([blocks[d].top for d in dote]) - self.bbox.h
+            self.inje = False
+            if keys[pygame.K_UP]:
+                ute = self.bbox.move((0, -1)).collidelistall(blocks)
+                if ute:
+                    self.bbox.y = max([blocks[u].bottom for u in ute])
+                    self.inje = False
+                else:
+                    self.bbox.y -= desp
+                    self.jbegin = self.bbox.y
+                    self.inje = True
         else:
-            self.position[1] += desp
+            if keys[pygame.K_UP]:
+                ute = self.bbox.move((0, -1)).collidelistall(blocks)
+                if ute:
+                    self.bbox.y = max([blocks[u].bottom for u in ute])
+                    self.inje = False
+                elif self.inje:
+                    if self.bbox.y > self.jbegin + self.jhei:
+                        self.bbox.y -= desp
+                    else:
+                        self.inje = False
+                        self.bbox.y += desp
+                else:
+                    self.bbox.y += desp
+            else:
+                self.bbox.y += desp
 
         if keys[pygame.K_LEFT]:
             lete = self.bbox.move((-1, 0)).collidelistall(blocks)
             if lete:
-                self.position[0] = max([blocks[l].right for l in lete])
+                self.bbox.x = max([blocks[l].right for l in lete if abs(blocks[l].right - self.bbox.left) <= 1])
             else:
-                self.position[0] -= desp
+                self.bbox.x -= desp
         if keys[pygame.K_RIGHT]:
             rite = self.bbox.move((1, 0)).collidelistall(blocks)
             if rite:
-                self.position[0] = min([blocks[r].left for r in rite]) - self.bbox.w
+                self.bbox.x = min([blocks[r].left for r in rite if abs(blocks[r].left - self.bbox.right) <= 1]) - self.bbox.w
             else:
-                self.position[0] += desp
-
-        self.bbox.x, self.bbox.y = self.position
+                self.bbox.x += desp
 
 class Square(Thing):
     """Solid Object, one would presume"""
