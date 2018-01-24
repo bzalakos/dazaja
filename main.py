@@ -62,32 +62,19 @@ class MyDude(Thing):
         desp = delta * self.speed
 
         dote = self.bbox.move((0, 1)).collidelistall(blocks)
-        if dote:
-            self.bbox.y = min([blocks[d].top for d in dote]) - self.bbox.h
-            self.inje = False
-            if keys[pygame.K_UP]:
-                ute = self.bbox.move((0, -1)).collidelistall(blocks)
-                if ute:
-                    self.bbox.y = max([blocks[u].bottom for u in ute])
-                    self.inje = False
-                else:
-                    self.bbox.y -= desp
-                    self.jbegin = self.bbox.y
-                    self.inje = True
+        ute = self.bbox.move((0, -1)).collidelistall(blocks)
+        if keys[pygame.K_UP]:
+            if dote and not ute:
+                self.inje = True
+                self.jbegin = self.bbox.y
+                self.bbox.y -= desp
+            if ute or self.bbox.y < self.jbegin - self.jhei:
+                self.inje = False
+                self.bbox.y += desp
         else:
-            if keys[pygame.K_UP]:
-                ute = self.bbox.move((0, -1)).collidelistall(blocks)
-                if ute:
-                    self.bbox.y = max([blocks[u].bottom for u in ute])
-                    self.inje = False
-                elif self.inje:
-                    if self.bbox.y > self.jbegin + self.jhei:
-                        self.bbox.y -= desp
-                    else:
-                        self.inje = False
-                        self.bbox.y += desp
-                else:
-                    self.bbox.y += desp
+            self.inje = False
+            if dote:
+                self.bbox.y = min([blocks[d].top for d in dote]) - self.bbox.h
             else:
                 self.bbox.y += desp
 
