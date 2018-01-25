@@ -14,12 +14,12 @@ def main():
     size = 320, 240
     screen = pygame.display.set_mode(size)
     the = MyDude(80, 120)
-    blocks = [Square(0, 220), Square(160, 120), Square(64, 220)]
+    blocks = [Square(0, 220), Square(160, 156), Square(64, 220)]
     sigma = time.time()
 
     while True: #Terrible idea, or Best Idea?
         for eve in pygame.event.get():
-            if eve.type == pygame.QUIT:
+            if eve.type == pygame.QUIT or eve.type == pygame.KEYDOWN and eve.key == pygame.K_ESCAPE:
                 sys.exit()
         sig = time.time()
         screen.fill((0, 0, 0))
@@ -36,7 +36,28 @@ class Thing:
         self.velocity = [0, 0]
         self.sprite = sprite
         self.bbox = self.sprite.get_rect()  # #rekt
-        self.bbox.x, self.bbox.y = x, y
+        # Yes, you do need this. BBOX uses integer coordinates, you keep insisting on floats.
+        self.x_value, self.y_value = self.bbox.x, self.bbox.y = x, y
+
+    def get_x(self) -> float:
+        """Get the current partial X position"""
+        return self.x_value
+
+    def set_x(self, value: float) -> None:
+        """Set the partial X position, and update the actual X position to nearest pixel"""
+        self.x_value = value
+        self.bbox.x = self.x_value
+
+    def get_y(self) -> float:
+        """Get the current partial Y position"""
+        return self.y_value
+
+    def set_y(self, value: float) -> None:
+        """Set the partial Y position, and update the actual Y position to nearest pixel"""
+        self.y_value = value
+        self.bbox.y = self.y_value
+
+    x, y = property(get_x, set_x), property(get_y, set_y)
 
     def step(self, delta):
         """Do a little bit of thing, delta is time since last step"""
@@ -51,45 +72,50 @@ class MyDude(Thing):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, sprite=sprites.dude, **kwargs)
         self.speed = 128
-        self.jhei = 128
+        self.jpeed = self.speed * 3
+        self.jhei = 65
         self.inje = False
+        self.olje = False
         self.jbegin = self.bbox.y
 
     def step(self, delta: float, blocks: list):
         """Do part of a thing
         Keep track of how long it's been since the last part, so you know how much of it to do"""
         keys = pygame.key.get_pressed() # Take a snapshot of the keyboard
-        desp = delta * self.speed
+        desp, jesp = delta * self.speed, delta * self.jpeed
 
         dote = self.bbox.move((0, 1)).collidelistall(blocks)
         ute = self.bbox.move((0, -1)).collidelistall(blocks)
         if keys[pygame.K_UP]:
             if dote and not ute:
-                self.inje = True
-                self.jbegin = self.bbox.y
-                self.bbox.y -= desp
-            if ute or self.bbox.y < self.jbegin - self.jhei:
+                if not self.olje:
+                    self.inje = True
+                    self.olje = True
+                    self.jbegin = self.bbox.bottom
+                else:
+                    self.y = min([blocks[d].top for d in dote]) - self.bbox.h
+            if ute or self.bbox.bottom < self.jbegin - self.jhei:
                 self.inje = False
-                self.bbox.y += desp
+            self.y -= jesp if self.inje else -jesp
         else:
-            self.inje = False
+            self.inje, self.olje = False, False
             if dote:
-                self.bbox.y = min([blocks[d].top for d in dote]) - self.bbox.h
+                self.y = min([blocks[d].top for d in dote]) - self.bbox.h
             else:
-                self.bbox.y += desp
+                self.y += jesp
 
         if keys[pygame.K_LEFT]:
             lete = self.bbox.move((-1, 0)).collidelistall(blocks)
             if lete:
-                self.bbox.x = max([blocks[l].right for l in lete if abs(blocks[l].right - self.bbox.left) <= 1])
+                self.x = max([blocks[l].right for l in lete if abs(blocks[l].right - self.bbox.left) <= 1])
             else:
-                self.bbox.x -= desp
+                self.x -= desp
         if keys[pygame.K_RIGHT]:
             rite = self.bbox.move((1, 0)).collidelistall(blocks)
             if rite:
-                self.bbox.x = min([blocks[r].left for r in rite if abs(blocks[r].left - self.bbox.right) <= 1]) - self.bbox.w
+                self.x = min([blocks[r].left for r in rite if abs(blocks[r].left - self.bbox.right) <= 1]) - self.bbox.w
             else:
-                self.bbox.x += desp
+                self.x += desp
 
 class Square(Thing):
     """Solid Object, one would presume"""
