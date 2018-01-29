@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import enum
 import pygame
 os.chdir(os.path.dirname(__file__)) # I really shouldn't need this line, but eh, atom.
 import sprites
@@ -38,6 +39,8 @@ class Thing:
         self.bbox = self.sprite.get_rect()  # #rekt
         # Yes, you do need this. BBOX uses integer coordinates, you keep insisting on floats.
         self.x_value, self.y_value = self.bbox.x, self.bbox.y = x, y
+        self.xme = enum.Enum('H', 'F W')
+        self.xse = enum.Enum('X', 'L R')
 
     def get_x(self) -> float:
         """Get the current partial X position"""
@@ -116,6 +119,14 @@ class MyDude(Thing):
                 self.x = min([blocks[r].left for r in rite if abs(blocks[r].left - self.bbox.right) <= 1]) - self.bbox.w
             else:
                 self.x += desp
+
+class Scissors(Thing):
+    """Snippity thing"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, sprite=sprites.scissor, **kwargs)
+        self.speed = 96
+        self.stae = enum.Enum('stae', '')
+        self.sta =
 
 class Square(Thing):
     """Solid Object, one would presume"""

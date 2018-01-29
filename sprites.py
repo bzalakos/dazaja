@@ -5,3 +5,4 @@ import pygame
 default_sprite = pygame.image.load('al.png')
 square = pygame.image.load('square.png')
 dude = pygame.image.load('100.png')
+scissor = pygame.image.load('blankscissor.png')
